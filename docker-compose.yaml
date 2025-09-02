@@ -1,0 +1,25 @@
+x-networks-config: &network-config
+  networks:
+    -app-network
+  extra_hosts:
+    - "localhost:host-gateway"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: dockerfile
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    ports:
+      - '8081:80'
+    command: python3 -m uvicorn src.main:app --host 0.0.0.0 --port 80 --loop uvloop --workers 3
+    healthcheck:
+      test: curl --fail http://localhost:80/ready || exit 1
+      start_period: 10s
+      interval: 10m
+      retries: 5
+      timeout: 10s
+    <<: *network-config
