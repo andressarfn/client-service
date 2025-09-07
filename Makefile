@@ -12,12 +12,18 @@ lint:
 	ruff check .
 
 format:
-	black .
 	isort .
+	black .
 	ruff check . --fix
 
 start: check-deps
 	uvicorn src.main:app --port 8081 --loop uvloop --reload
+
+start-containers:
+	docker compose up --build
+
+reload-volumes:
+	docker compose down --volumes
 
 create-env:
 	cp .env.example .env

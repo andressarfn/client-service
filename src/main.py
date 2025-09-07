@@ -1,22 +1,24 @@
 import uuid
-from logging import getLogger
+from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from loguru import logger
 
-from interfaces.api.exceptions.handler import (
-    custom_exception_handler, custom_http_exception_handler,
-    custom_validation_exception_handler)
 from src.infrastructure.config.settings import settings
-from utils.trace_id import configure_trace_id
+from src.infrastructure.database.postgres_client import PostgresConnectionClient
+from src.interfaces.api.health_check.controller import health_check_router
+from src.interfaces.api.v1.controller import client_v1_router
+from src.utils.trace_id import configure_trace_id
 
-logger = getLogger(__name__)
 
-
+@asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup code can be added here
+    await PostgresConnectionClient.initialize(
+        settings.DATABASE_URL, settings.DATABASE_SCHEMA, settings.DEBUG
+    )
     yield
-    # Shutdown code can be added here
 
 
 app = FastAPI(
@@ -24,10 +26,41 @@ app = FastAPI(
     version=settings.VERSION,
     debug=settings.DEBUG,
     root_path=settings.ROOT_PATH,
-    docs_url="docs",
+    docs_url="/docs",
     openapi_url="/documentation",
     lifespan=lifespan,
 )
+
+
+@app.exception_handler(Exception)
+async def custom_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    logger.error("Unhandled exception occurred at %s", request.url, exc_info=exc)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"message": "Internal Server Error", "error": str(exc)},
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def custom_validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    logger.error("Validation error occurred at %s", request.url, exc_info=exc)
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"message": "Validation Error", "errors": str(exc)},
+    )
+
+
+@app.exception_handler(HTTPException)
+async def custom_http_exception_handler(
+    request: Request, exc: HTTPException
+) -> JSONResponse:
+    logger.error("HTTP error occurred at %s", request.url, exc_info=exc)
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"message": "HTTP Error", "errors": str(exc.detail)},
+    )
 
 
 @app.middleware("http")
@@ -53,6 +86,5 @@ async def request_middleware(request: Request, call_next: callable):
         return response
 
 
-app.add_exception_handler(Exception, custom_exception_handler)
-app.add_exception_handler(RequestValidationError, custom_validation_exception_handler)
-app.add_exception_handler(HTTPException, custom_http_exception_handler)
+app.include_router(health_check_router)
+app.include_router(client_v1_router)
