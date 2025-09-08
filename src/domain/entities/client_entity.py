@@ -8,3 +8,6 @@ class ClientInputEntity(BaseModel):
 
 class ClientOutputEntity(BaseModel):
     client_id: int
+    name: str | None = None
+    email: str | None = None
+    created_at: str | None = None

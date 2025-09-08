@@ -57,9 +57,18 @@ async def custom_http_exception_handler(
     request: Request, exc: HTTPException
 ) -> JSONResponse:
     logger.error("HTTP error occurred at %s", request.url, exc_info=exc)
+
+    message = "HTTP Error"
+
+    if exc.status_code == status.HTTP_400_BAD_REQUEST:
+        message = "Bad Request"
+
     return JSONResponse(
         status_code=exc.status_code,
-        content={"message": "HTTP Error", "errors": str(exc.detail)},
+        content={
+            "message": message,
+            "errors": str(exc.detail),
+        },
     )
 
 

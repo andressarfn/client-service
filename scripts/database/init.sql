@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS favorites.favorites (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_client_product ON favorites.favorites (client_id, product_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_client_email ON favorites.clients (email);
 
 GRANT USAGE ON SCHEMA favorites TO client_service_user;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA favorites TO client_service_user;
