@@ -9,5 +9,9 @@ class GetClientException(CustomException):
     pass
 
 
+class UpdateClientException(CustomException):
+    pass
+
+
 class DeleteClientException(CustomException):
     pass

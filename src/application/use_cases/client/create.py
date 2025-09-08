@@ -1,14 +1,15 @@
 from dataclasses import dataclass
 
 from loguru import logger
-from src.application.use_cases.client_use_cases.exceptions_client import (
+from src.application.use_cases.client.exceptions import (
     CreateClientEmailAlreadyExistsException,
 )
 from src.domain.entities.client_entity import ClientInputEntity, ClientOutputEntity
 from src.domain.repositories.client_repository_interface import (
     ClientRepositoryInterface,
 )
-from sqlalchemy.exc import IntegrityError
+
+from src.infrastructure.repositories.exceptions import EmailAlreadyExistsException
 
 
 @dataclass(frozen=True)
@@ -26,13 +27,9 @@ class CreateClientUseCase:
 
             logger.info(f"Client created with ID: {client_id}")
             return ClientOutputEntity(client_id=client_id)
-        except Exception as e:
-            if isinstance(
-                e, IntegrityError
-            ) and "duplicate key value violates unique constraint " in str(e.orig):
-                raise CreateClientEmailAlreadyExistsException(
-                    title="Email already exists",
-                    detail="A client with this email already exists.",
-                    status_code=400,
-                )
-            raise e
+        except EmailAlreadyExistsException as e:
+            raise CreateClientEmailAlreadyExistsException(
+                title=e.title,
+                detail="The email provided is already in use.",
+                status_code=400,
+            )

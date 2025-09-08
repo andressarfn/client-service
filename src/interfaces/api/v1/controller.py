@@ -7,21 +7,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.application.dtos.client_dto import ClientInputDTO
 from src.application.mappers.client_mapper import ClientMapper
 
-from src.application.use_cases.client_use_cases.create_client import CreateClientUseCase
-from src.application.use_cases.client_use_cases.delete_client import DeleteClientUseCase
-
-from src.application.use_cases.client_use_cases.exceptions_client import (
+from src.application.use_cases.client.create import CreateClientUseCase
+from src.application.use_cases.client.delete import DeleteClientUseCase
+from src.application.use_cases.client.exceptions import (
     CreateClientEmailAlreadyExistsException,
     DeleteClientNotFoundException,
     GetClientNotFoundException,
+    UpdateClientNotFoundException,
 )
-from src.application.use_cases.client_use_cases.get_client import GetClientUseCase
+from src.application.use_cases.client.get import GetClientUseCase
+from src.application.use_cases.client.update import UpdateClientUseCase
 from src.infrastructure.database.postgres_client import PostgresConnectionClient
 from src.infrastructure.repositories.client_repository import ClientRepository
 from src.interfaces.api.v1.exceptions import (
     DeleteClientException,
     GetClientException,
     PostClientException,
+    UpdateClientException,
 )
 from src.interfaces.api.v1.schema import ClientRequestSchema, ClientResponseSchema
 
@@ -63,6 +65,7 @@ async def create_client(
     description="Get a client by ID",
     status_code=status.HTTP_200_OK,
     response_model=ClientResponseSchema,
+    response_model_exclude_none=True,
 )
 async def get_client(
     client_id: Annotated[int, Path(..., description="Client ID")],
@@ -79,6 +82,36 @@ async def get_client(
     except Exception as e:
         raise GetClientException(
             title="Failed to get client",
+            detail={"exception": e.__class__.__name__, "message": str(e)},
+            traceback=traceback.format_exc(),
+        )
+
+
+@client_v1_router.patch(
+    "/client/{client_id}",
+    description="Update a client by ID",
+    status_code=status.HTTP_200_OK,
+    response_model=ClientResponseSchema,
+)
+async def update_client(
+    client_id: Annotated[int, Path(..., description="Client ID")],
+    schema: Annotated[ClientRequestSchema, Body(..., description="Update Client")],
+    session: AsyncSession = Depends(PostgresConnectionClient.session),
+) -> ClientResponseSchema:
+    try:
+        client_input_dto = ClientInputDTO(**schema.model_dump())
+        client_input_entity = ClientMapper.to_entity(client_input_dto)
+
+        use_case = UpdateClientUseCase(
+            client_repository=ClientRepository(session),
+        )
+        client_output_entity = await use_case.execute(client_id, client_input_entity)
+        return ClientResponseSchema(**client_output_entity.model_dump())
+    except UpdateClientNotFoundException as e:
+        raise e
+    except Exception as e:
+        raise UpdateClientException(
+            title="Failed to update client",
             detail={"exception": e.__class__.__name__, "message": str(e)},
             traceback=traceback.format_exc(),
         )

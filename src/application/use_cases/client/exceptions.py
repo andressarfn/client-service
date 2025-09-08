@@ -9,5 +9,9 @@ class GetClientNotFoundException(CustomHttpException):
     pass
 
 
+class UpdateClientNotFoundException(CustomHttpException):
+    pass
+
+
 class DeleteClientNotFoundException(CustomHttpException):
     pass

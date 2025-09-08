@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     DATABASE_URL: str = ""
     DATABASE_SCHEMA: str = ""
 
+    PRODUCT_CLIENT_URL: str = (
+        "https://a38cdba7-87da-46a5-ada1-eb72692ddb34.mock.pstmn.io"
+    )
+
     class Config:
         env_file = "ENV_FILE" if "ENV_FILE" in os.environ else ".env"
         env_file_encoding = "utf-8"

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from src.application.use_cases.client_use_cases.exceptions_client import (
+from src.application.use_cases.client.exceptions import (
     DeleteClientNotFoundException,
 )
 from src.domain.repositories.client_repository_interface import (

@@ -11,3 +11,4 @@ class ClientResponseSchema(BaseModel):
     name: str | None = None
     email: EmailStr | None = None
     created_at: str | None = None
+    updated_at: str | None = None
