@@ -1,13 +1,15 @@
 from dataclasses import dataclass
 
+from loguru import logger
 from pydantic import BaseModel
-from sqlalchemy import insert, select
+from sqlalchemy import delete, insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.repositories.client_repository_interface import (
     ClientRepositoryInterface,
 )
 from src.infrastructure.models.client_model import ClientModel
+from src.infrastructure.repositories.exceptions import NotFoundException
 
 
 @dataclass(frozen=True)
@@ -19,12 +21,17 @@ class ClientRepository(ClientRepositoryInterface):
         result = await self.session.execute(stmt)
         return result.scalar_one()
 
-    async def get_by_key(self, key: int | str) -> ClientModel | None:
-        if isinstance(key, int):
-            stmt = select(ClientModel).where(ClientModel.id == key).limit(1)
-        elif isinstance(key, str):
-            stmt = select(ClientModel).where(ClientModel.email == key).limit(1)
-        else:
-            raise ValueError("Key must be int (id) or str (email)")
+    async def get_by_id(self, id: int) -> BaseModel | None:
+        stmt = select(ClientModel).where(ClientModel.id == id).limit(1)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def delete(self, id: int) -> None:
+        stmt = delete(ClientModel).where(ClientModel.id == id)
+        deleted = bool((await self.session.execute(stmt)).rowcount)
+        if not deleted:
+            logger.error(f"Client with id {id} not found for deletion")
+            raise NotFoundException(
+                title="client_id not found",
+            )
+        logger.info(f"Client with id {id} deleted successfully")

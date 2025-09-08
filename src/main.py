@@ -48,7 +48,7 @@ async def custom_validation_exception_handler(
     logger.error("Validation error occurred at %s", request.url, exc_info=exc)
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"message": "Validation Error", "errors": str(exc)},
+        content={"message": "Validation Error", "error": str(exc)},
     )
 
 
@@ -60,14 +60,14 @@ async def custom_http_exception_handler(
 
     message = "HTTP Error"
 
-    if exc.status_code == status.HTTP_400_BAD_REQUEST:
+    if exc.status_code in (status.HTTP_400_BAD_REQUEST, status.HTTP_404_NOT_FOUND):
         message = "Bad Request"
 
     return JSONResponse(
         status_code=exc.status_code,
         content={
             "message": message,
-            "errors": str(exc.detail),
+            "error": str(exc.detail),
         },
     )
 
