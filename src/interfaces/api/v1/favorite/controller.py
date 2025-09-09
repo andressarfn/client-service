@@ -17,6 +17,8 @@ from src.infrastructure.external_services.products.product_client import (
     ProductClientInterface,
 )
 from src.infrastructure.repositories.favorite_repository import FavoriteRepository
+from src.interfaces.api.auth.dependencies import get_current_user
+from src.interfaces.api.v1.exceptions import AccessTokenInvalidException
 from src.interfaces.api.v1.favorite.dependencies import get_product_client
 from src.interfaces.api.v1.favorite.exceptions import (
     GetFavoriteException,
@@ -42,8 +44,15 @@ async def add_favorite(
     schema: Annotated[FavoriteRequestSchema, Body(..., description="Favorite Item")],
     session: Annotated[AsyncSession, Depends(PostgresConnectionClient.session)],
     product_client: Annotated[ProductClientInterface, Depends(get_product_client)],
+    current_user: Annotated[str, Depends(get_current_user)],
 ):
     try:
+        if not current_user:
+            raise AccessTokenInvalidException(
+                title="Unauthorized",
+                detail="Your access token is missing or invalid.",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            )
         favorite_input_dto = FavoriteInputDTO(
             client_id=client_id, product_id=schema.product_id
         )
@@ -74,8 +83,15 @@ async def get_favorites(
     client_id: Annotated[int, Path(..., description="Client ID")],
     session: Annotated[AsyncSession, Depends(PostgresConnectionClient.session)],
     product_client: Annotated[ProductClientInterface, Depends(get_product_client)],
+    current_user: Annotated[str, Depends(get_current_user)],
 ):
     try:
+        if not current_user:
+            raise AccessTokenInvalidException(
+                title="Unauthorized",
+                detail="Your access token is missing or invalid.",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            )
         use_case = GetFavoriteUseCase(
             favorite_repository=FavoriteRepository(session),
             product_client=product_client,

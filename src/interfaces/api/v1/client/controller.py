@@ -16,6 +16,7 @@ from src.infrastructure.repositories.exceptions import (
     EmailAlreadyExistsException,
     NotFoundException,
 )
+from src.interfaces.api.auth.dependencies import get_current_user
 from src.interfaces.api.v1.client.exceptions import (
     DeleteClientException,
     GetClientException,
@@ -26,6 +27,7 @@ from src.interfaces.api.v1.client.schema import (
     ClientRequestSchema,
     ClientResponseSchema,
 )
+from src.interfaces.api.v1.exceptions import AccessTokenInvalidException
 
 client_v1_router = APIRouter(prefix="/v1", tags=["Client"])
 
@@ -40,8 +42,15 @@ client_v1_router = APIRouter(prefix="/v1", tags=["Client"])
 async def create_client(
     schema: Annotated[ClientRequestSchema, Body(..., description="Create Client")],
     session: Annotated[AsyncSession, Depends(PostgresConnectionClient.session)],
+    current_user: Annotated[str, Depends(get_current_user)],
 ) -> ClientResponseSchema:
     try:
+        if not current_user:
+            raise AccessTokenInvalidException(
+                title="Unauthorized",
+                detail="Your access token is missing or invalid.",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            )
         client_input_dto = ClientInputDTO(**schema.model_dump())
         client_input_entity = ClientMapper.to_entity(client_input_dto)
 
@@ -70,8 +79,15 @@ async def create_client(
 async def get_client(
     client_id: Annotated[int, Path(..., description="Client ID")],
     session: Annotated[AsyncSession, Depends(PostgresConnectionClient.session)],
+    current_user: Annotated[str, Depends(get_current_user)],
 ) -> ClientResponseSchema:
     try:
+        if not current_user:
+            raise AccessTokenInvalidException(
+                title="Unauthorized",
+                detail="Your access token is missing or invalid.",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            )
         use_case = GetClientUseCase(
             client_repository=ClientRepository(session),
         )
@@ -97,8 +113,15 @@ async def update_client(
     client_id: Annotated[int, Path(..., description="Client ID")],
     schema: Annotated[ClientRequestSchema, Body(..., description="Update Client")],
     session: Annotated[AsyncSession, Depends(PostgresConnectionClient.session)],
+    current_user: Annotated[str, Depends(get_current_user)],
 ) -> ClientResponseSchema:
     try:
+        if not current_user:
+            raise AccessTokenInvalidException(
+                title="Unauthorized",
+                detail="Your access token is missing or invalid.",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            )
         client_input_dto = ClientInputDTO(**schema.model_dump())
         client_input_entity = ClientMapper.to_entity(client_input_dto)
 
@@ -126,8 +149,15 @@ async def update_client(
 async def delete_client(
     client_id: Annotated[int, Path(..., description="Client ID")],
     session: Annotated[AsyncSession, Depends(PostgresConnectionClient.session)],
+    current_user: Annotated[str, Depends(get_current_user)],
 ) -> None:
     try:
+        if not current_user:
+            raise AccessTokenInvalidException(
+                title="Unauthorized",
+                detail="Your access token is missing or invalid.",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            )
         use_case = DeleteClientUseCase(
             client_repository=ClientRepository(session),
         )
