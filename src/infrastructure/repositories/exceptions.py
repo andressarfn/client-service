@@ -1,13 +1,9 @@
-from dataclasses import dataclass
-
-from src.shared.exceptions import CustomException
+from src.shared.exceptions import CustomHttpException
 
 
-@dataclass
-class NotFoundException(CustomException):
-    title: str = "Not found"
+class NotFoundException(CustomHttpException):
+    pass
 
 
-@dataclass
-class EmailAlreadyExistsException(CustomException):
-    title: str = "Email already exists"
+class EmailAlreadyExistsException(CustomHttpException):
+    pass

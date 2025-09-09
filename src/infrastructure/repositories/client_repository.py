@@ -31,7 +31,11 @@ class ClientRepository(ClientRepositoryInterface):
         except IntegrityError as e:
             if "duplicate key value violates unique constraint" in str(e):
                 logger.error("Email already exists in the database")
-                raise EmailAlreadyExistsException(title="Email already exists")
+                raise EmailAlreadyExistsException(
+                    title="Email already exists",
+                    detail="A client with this email address already exists.",
+                    status_code=400,
+                )
 
     async def get_by_id(self, id: int) -> BaseModel | None:
         stmt = select(self.model).where(self.model.id == id).limit(1)
@@ -41,6 +45,8 @@ class ClientRepository(ClientRepositoryInterface):
             logger.error(f"Client with id {id} not found")
             raise NotFoundException(
                 title="client_id not found",
+                detail=f"No client found with id {id}",
+                status_code=400,
             )
         logger.info(f"Client with id {id} retrieved successfully")
         return result
@@ -57,13 +63,21 @@ class ClientRepository(ClientRepositoryInterface):
             client = result.scalar_one_or_none()
             if client is None:
                 logger.error(f"Client with id {id} not found for update")
-                raise NotFoundException(title="client_id not found")
+                raise NotFoundException(
+                    title="client_id not found",
+                    detail=f"No client found with id {id}",
+                    status_code=400,
+                )
             logger.info(f"Client with id {id} updated successfully")
             return client
         except IntegrityError as e:
             if "duplicate key value violates unique constraint" in str(e):
                 logger.error("Email already exists in the database")
-                raise EmailAlreadyExistsException(title="Email already exists")
+                raise EmailAlreadyExistsException(
+                    title="Email already exists",
+                    detail="A client with this email address already exists.",
+                    status_code=400,
+                )
 
     async def delete(self, id: int) -> None:
         stmt = delete(self.model).where(self.model.id == id)
@@ -72,5 +86,7 @@ class ClientRepository(ClientRepositoryInterface):
             logger.error(f"Client with id {id} not found for deletion")
             raise NotFoundException(
                 title="client_id not found",
+                detail=f"No client found with id {id}",
+                status_code=400,
             )
         logger.info(f"Client with id {id} deleted successfully")

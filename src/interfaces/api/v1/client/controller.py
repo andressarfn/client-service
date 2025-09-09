@@ -8,14 +8,14 @@ from src.application.dtos.client_dto import ClientInputDTO
 from src.application.mappers.client_mapper import ClientMapper
 from src.application.use_cases.client.create import CreateClientUseCase
 from src.application.use_cases.client.delete import DeleteClientUseCase
-from src.application.use_cases.client.exceptions import (
-    ClientEmailAlreadyExistsException,
-    ClientNotFoundException,
-)
 from src.application.use_cases.client.get import GetClientUseCase
 from src.application.use_cases.client.update import UpdateClientUseCase
 from src.infrastructure.database.postgres_client import PostgresConnectionClient
 from src.infrastructure.repositories.client_repository import ClientRepository
+from src.infrastructure.repositories.exceptions import (
+    EmailAlreadyExistsException,
+    NotFoundException,
+)
 from src.interfaces.api.v1.client.exceptions import (
     DeleteClientException,
     GetClientException,
@@ -50,7 +50,7 @@ async def create_client(
         )
         client_output_entity = await use_case.execute(client_input_entity)
         return ClientResponseSchema(**client_output_entity.model_dump())
-    except ClientEmailAlreadyExistsException as e:
+    except EmailAlreadyExistsException as e:
         raise e
     except Exception as e:
         raise PostClientException(
@@ -77,7 +77,7 @@ async def get_client(
         )
         client_output_entity = await use_case.execute(client_id)
         return ClientResponseSchema(**client_output_entity.model_dump())
-    except ClientNotFoundException as e:
+    except NotFoundException as e:
         raise e
     except Exception as e:
         raise GetClientException(
@@ -107,7 +107,7 @@ async def update_client(
         )
         client_output_entity = await use_case.execute(client_id, client_input_entity)
         return ClientResponseSchema(**client_output_entity.model_dump())
-    except (ClientNotFoundException, ClientEmailAlreadyExistsException) as e:
+    except (NotFoundException, EmailAlreadyExistsException) as e:
         raise e
     except Exception as e:
         raise UpdateClientException(
@@ -132,7 +132,7 @@ async def delete_client(
             client_repository=ClientRepository(session),
         )
         await use_case.execute(client_id)
-    except ClientNotFoundException as e:
+    except NotFoundException as e:
         raise e
     except Exception as e:
         raise DeleteClientException(
