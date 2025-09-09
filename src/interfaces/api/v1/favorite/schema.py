@@ -1,6 +1,10 @@
 from pydantic import BaseModel
 
 
+class FavoriteRequestSchema(BaseModel):
+    product_id: int
+
+
 class ProductFavoriteSchema(BaseModel):
     price: float
     image: str
@@ -10,10 +14,10 @@ class ProductFavoriteSchema(BaseModel):
     reviewScore: float
 
 
-class FavoriteResponseSchema(BaseModel):
+class FavoritesResponseSchema(BaseModel):
     client_id: int
     favorites: list[ProductFavoriteSchema]
 
 
-class FavoriteRequestSchema(BaseModel):
-    product_id: int
+class FavoriteResponseSchema(BaseModel):
+    message: str = "Favorite item added successfully"

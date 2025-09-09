@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from src.domain.entities.favorite_entity import (
-    FavoriteResponseEntity,
+    FavoritesOutputEntity,
     ProductFavoriteEntity,
 )
 from src.domain.repositories.favorite_repository_interface import (
@@ -17,7 +17,7 @@ class GetFavoriteUseCase:
     favorite_repository: FavoriteRepositoryInterface
     product_client: ProductClientInterface
 
-    async def execute(self, client_id: str) -> list[ProductFavoriteEntity]:
+    async def execute(self, client_id: int) -> list[ProductFavoriteEntity]:
         product_ids = await self.favorite_repository.get_favorites_by_client_id(
             client_id
         )
@@ -27,7 +27,7 @@ class GetFavoriteUseCase:
             if product:
                 products.append(product)
 
-        return FavoriteResponseEntity(
+        return FavoritesOutputEntity(
             client_id=client_id,
             favorites=products,
         )

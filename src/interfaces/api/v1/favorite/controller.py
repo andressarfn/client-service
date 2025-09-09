@@ -4,6 +4,8 @@ from typing import Annotated
 from fastapi import APIRouter, Body, Depends, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.application.dtos.favorite_dto import FavoriteInputDTO
+from src.application.mappers.favorite_mapper import FavoriteMapper
 from src.application.use_cases.favorite.add import AddFavoriteUseCase
 from src.application.use_cases.favorite.exceptions import (
     FavoriteProductAlreadyExistsError,
@@ -23,6 +25,7 @@ from src.interfaces.api.v1.favorite.exceptions import (
 from src.interfaces.api.v1.favorite.schema import (
     FavoriteRequestSchema,
     FavoriteResponseSchema,
+    FavoritesResponseSchema,
 )
 
 favorite_v1_router = APIRouter(prefix="/v1", tags=["Favorite"])
@@ -36,19 +39,21 @@ favorite_v1_router = APIRouter(prefix="/v1", tags=["Favorite"])
 )
 async def add_favorite(
     client_id: Annotated[int, Path(..., description="Client ID")],
-    favorite_item: Annotated[
-        FavoriteRequestSchema, Body(..., description="Favorite Item")
-    ],
+    schema: Annotated[FavoriteRequestSchema, Body(..., description="Favorite Item")],
     session: Annotated[AsyncSession, Depends(PostgresConnectionClient.session)],
     product_client: Annotated[ProductClientInterface, Depends(get_product_client)],
 ):
     try:
+        favorite_input_dto = FavoriteInputDTO(
+            client_id=client_id, product_id=schema.product_id
+        )
+        favorite_input_entity = FavoriteMapper.to_entity(favorite_input_dto)
         use_case = AddFavoriteUseCase(
             favorite_repository=FavoriteRepository(session),
             product_client=product_client,
         )
-        result = await use_case.execute(client_id, favorite_item.product_id)
-        return FavoriteResponseSchema(id=result)
+        favorite_output_entity = await use_case.execute(favorite_input_entity)
+        return FavoriteResponseSchema(**favorite_output_entity.model_dump())
     except (FavoriteProductNotFoundError, FavoriteProductAlreadyExistsError) as e:
         raise e
     except Exception as e:
@@ -63,7 +68,7 @@ async def add_favorite(
     "/client/{client_id}/favorites",
     description="Get all favorite items for a client",
     status_code=status.HTTP_200_OK,
-    response_model=FavoriteResponseSchema,
+    response_model=FavoritesResponseSchema,
 )
 async def get_favorites(
     client_id: Annotated[int, Path(..., description="Client ID")],
@@ -75,9 +80,9 @@ async def get_favorites(
             favorite_repository=FavoriteRepository(session),
             product_client=product_client,
         )
-        favorites = await use_case.execute(client_id)
-        return FavoriteResponseSchema(
-            **favorites.model_dump(),
+        favorites_output_entity = await use_case.execute(client_id)
+        return FavoritesResponseSchema(
+            **favorites_output_entity.model_dump(),
         )
     except Exception as e:
         raise GetFavoriteException(

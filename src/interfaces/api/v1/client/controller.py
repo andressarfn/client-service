@@ -121,6 +121,7 @@ async def update_client(
     "/client/{client_id}",
     description="Delete a client by ID",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
 )
 async def delete_client(
     client_id: Annotated[int, Path(..., description="Client ID")],
