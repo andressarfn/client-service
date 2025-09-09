@@ -1,11 +1,17 @@
 from dataclasses import dataclass
 
-from src.application.use_cases.client.exceptions import UpdateClientNotFoundException
+from src.application.use_cases.client.exceptions import (
+    ClientEmailAlreadyExistsException,
+    ClientNotFoundException,
+)
 from src.domain.entities.client_entity import ClientInputEntity, ClientOutputEntity
 from src.domain.repositories.client_repository_interface import (
     ClientRepositoryInterface,
 )
-from src.infrastructure.repositories.exceptions import NotFoundException
+from src.infrastructure.repositories.exceptions import (
+    EmailAlreadyExistsException,
+    NotFoundException,
+)
 
 
 @dataclass(frozen=True)
@@ -26,8 +32,14 @@ class UpdateClientUseCase:
                 created_at=str(client_entity.created_at),
                 updated_at=str(client_entity.updated_at),
             )
+        except EmailAlreadyExistsException as e:
+            raise ClientEmailAlreadyExistsException(
+                title=e.title,
+                detail=f"The email '{client_input_entity.email}' is already in use.",
+                status_code=400,
+            )
         except NotFoundException:
-            raise UpdateClientNotFoundException(
+            raise ClientNotFoundException(
                 title="Client not found",
                 detail=f"client_id: {client_id} does not exist.",
                 status_code=404,

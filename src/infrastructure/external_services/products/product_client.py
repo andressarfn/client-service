@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from loguru import logger
 
-from src.infrastructure.config import settings
+from src.infrastructure.config.settings import settings
 from src.infrastructure.external_services.client import ClientInterface
 
 
@@ -12,7 +12,7 @@ class ProductClientInterface(ABC):
     async def get_product_by_id(self, product_id: int) -> dict | None: ...
 
     @abstractmethod
-    async def check_products_exist(self, product_ids: list[int]) -> bool: ...
+    async def get_list_products(self) -> list[dict]: ...
 
 
 @dataclass(frozen=True)
@@ -25,7 +25,7 @@ class ProductClient(ProductClientInterface):
         headers = {
             "Content-Type": "application/json",
         }
-        response = await self.client.get(url=url, headers=headers)
+        response = await self.client.get_by_path(url=url, headers=headers)
         logger.info(f"Response from product service: {response}")
         return response
 
@@ -39,9 +39,12 @@ class ProductClient(ProductClientInterface):
                 "Content-Type": "application/json",
             }
             params = {"page": page}
-            response = await self.client.get(url=url, headers=headers, params=params)
+            response = await self.client.get_by_query(
+                url=url, headers=headers, params=params
+            )
             logger.info(
-                f"Response from product service page: {page} with count: {response.get('count', 0)}"
+                f"Response from product service page: {page} "
+                f"with count: {response.get('count', 0)}"
             )
             if not response or not response.get("results"):
                 break

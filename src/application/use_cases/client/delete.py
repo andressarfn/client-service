@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+
 from src.application.use_cases.client.exceptions import (
-    DeleteClientNotFoundException,
+    ClientNotFoundException,
 )
 from src.domain.repositories.client_repository_interface import (
     ClientRepositoryInterface,
@@ -16,7 +17,7 @@ class DeleteClientUseCase:
         try:
             await self.client_repository.delete(client_id)
         except NotFoundException:
-            raise DeleteClientNotFoundException(
+            raise ClientNotFoundException(
                 title="client_id not found",
                 detail=f"client_id: {client_id} does not exist.",
                 status_code=404,

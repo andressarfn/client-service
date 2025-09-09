@@ -1,17 +1,9 @@
 from src.shared.exceptions import CustomHttpException
 
 
-class CreateClientEmailAlreadyExistsException(CustomHttpException):
+class ClientEmailAlreadyExistsException(CustomHttpException):
     pass
 
 
-class GetClientNotFoundException(CustomHttpException):
-    pass
-
-
-class UpdateClientNotFoundException(CustomHttpException):
-    pass
-
-
-class DeleteClientNotFoundException(CustomHttpException):
+class ClientNotFoundException(CustomHttpException):
     pass

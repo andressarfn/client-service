@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from src.application.use_cases.client.exceptions import (
-    GetClientNotFoundException,
+    ClientNotFoundException,
 )
 from src.domain.entities.client_entity import ClientInputEntity, ClientOutputEntity
 from src.domain.repositories.client_repository_interface import (
@@ -25,7 +25,7 @@ class GetClientUseCase:
                 updated_at=str(client_entity.updated_at),
             )
         except NotFoundException:
-            raise GetClientNotFoundException(
+            raise ClientNotFoundException(
                 title="client_id not found",
                 detail=f"client_id: {client_id} does not exist.",
                 status_code=404,

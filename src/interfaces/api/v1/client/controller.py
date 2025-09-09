@@ -6,26 +6,26 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.application.dtos.client_dto import ClientInputDTO
 from src.application.mappers.client_mapper import ClientMapper
-
 from src.application.use_cases.client.create import CreateClientUseCase
 from src.application.use_cases.client.delete import DeleteClientUseCase
 from src.application.use_cases.client.exceptions import (
-    CreateClientEmailAlreadyExistsException,
-    DeleteClientNotFoundException,
-    GetClientNotFoundException,
-    UpdateClientNotFoundException,
+    ClientEmailAlreadyExistsException,
+    ClientNotFoundException,
 )
 from src.application.use_cases.client.get import GetClientUseCase
 from src.application.use_cases.client.update import UpdateClientUseCase
 from src.infrastructure.database.postgres_client import PostgresConnectionClient
 from src.infrastructure.repositories.client_repository import ClientRepository
-from src.interfaces.api.v1.exceptions import (
+from src.interfaces.api.v1.client.exceptions import (
     DeleteClientException,
     GetClientException,
     PostClientException,
     UpdateClientException,
 )
-from src.interfaces.api.v1.schema import ClientRequestSchema, ClientResponseSchema
+from src.interfaces.api.v1.client.schema import (
+    ClientRequestSchema,
+    ClientResponseSchema,
+)
 
 client_v1_router = APIRouter(prefix="/v1", tags=["Client"])
 
@@ -39,7 +39,7 @@ client_v1_router = APIRouter(prefix="/v1", tags=["Client"])
 )
 async def create_client(
     schema: Annotated[ClientRequestSchema, Body(..., description="Create Client")],
-    session: AsyncSession = Depends(PostgresConnectionClient.session),
+    session: Annotated[AsyncSession, Depends(PostgresConnectionClient.session)],
 ) -> ClientResponseSchema:
     try:
         client_input_dto = ClientInputDTO(**schema.model_dump())
@@ -50,7 +50,7 @@ async def create_client(
         )
         client_output_entity = await use_case.execute(client_input_entity)
         return ClientResponseSchema(**client_output_entity.model_dump())
-    except CreateClientEmailAlreadyExistsException as e:
+    except ClientEmailAlreadyExistsException as e:
         raise e
     except Exception as e:
         raise PostClientException(
@@ -69,7 +69,7 @@ async def create_client(
 )
 async def get_client(
     client_id: Annotated[int, Path(..., description="Client ID")],
-    session: AsyncSession = Depends(PostgresConnectionClient.session),
+    session: Annotated[AsyncSession, Depends(PostgresConnectionClient.session)],
 ) -> ClientResponseSchema:
     try:
         use_case = GetClientUseCase(
@@ -77,7 +77,7 @@ async def get_client(
         )
         client_output_entity = await use_case.execute(client_id)
         return ClientResponseSchema(**client_output_entity.model_dump())
-    except GetClientNotFoundException as e:
+    except ClientNotFoundException as e:
         raise e
     except Exception as e:
         raise GetClientException(
@@ -96,7 +96,7 @@ async def get_client(
 async def update_client(
     client_id: Annotated[int, Path(..., description="Client ID")],
     schema: Annotated[ClientRequestSchema, Body(..., description="Update Client")],
-    session: AsyncSession = Depends(PostgresConnectionClient.session),
+    session: Annotated[AsyncSession, Depends(PostgresConnectionClient.session)],
 ) -> ClientResponseSchema:
     try:
         client_input_dto = ClientInputDTO(**schema.model_dump())
@@ -107,7 +107,7 @@ async def update_client(
         )
         client_output_entity = await use_case.execute(client_id, client_input_entity)
         return ClientResponseSchema(**client_output_entity.model_dump())
-    except UpdateClientNotFoundException as e:
+    except (ClientNotFoundException, ClientEmailAlreadyExistsException) as e:
         raise e
     except Exception as e:
         raise UpdateClientException(
@@ -124,14 +124,14 @@ async def update_client(
 )
 async def delete_client(
     client_id: Annotated[int, Path(..., description="Client ID")],
-    session: AsyncSession = Depends(PostgresConnectionClient.session),
+    session: Annotated[AsyncSession, Depends(PostgresConnectionClient.session)],
 ) -> None:
     try:
         use_case = DeleteClientUseCase(
             client_repository=ClientRepository(session),
         )
         await use_case.execute(client_id)
-    except DeleteClientNotFoundException as e:
+    except ClientNotFoundException as e:
         raise e
     except Exception as e:
         raise DeleteClientException(

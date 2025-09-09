@@ -1,0 +1,33 @@
+from dataclasses import dataclass
+
+from src.domain.entities.favorite_entity import (
+    FavoriteResponseEntity,
+    ProductFavoriteEntity,
+)
+from src.domain.repositories.favorite_repository_interface import (
+    FavoriteRepositoryInterface,
+)
+from src.infrastructure.external_services.products.product_client import (
+    ProductClientInterface,
+)
+
+
+@dataclass(frozen=True)
+class GetFavoriteUseCase:
+    favorite_repository: FavoriteRepositoryInterface
+    product_client: ProductClientInterface
+
+    async def execute(self, client_id: str) -> list[ProductFavoriteEntity]:
+        product_ids = await self.favorite_repository.get_favorites_by_client_id(
+            client_id
+        )
+        products = []
+        for product in product_ids:
+            product = await self.product_client.get_product_by_id(product)
+            if product:
+                products.append(product)
+
+        return FavoriteResponseEntity(
+            client_id=client_id,
+            favorites=products,
+        )

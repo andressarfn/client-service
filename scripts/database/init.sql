@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS favorites.clients (
 CREATE TABLE IF NOT EXISTS favorites.favorites (
     id SERIAL PRIMARY KEY,
     client_id INT REFERENCES favorites.clients(id) ON DELETE CASCADE,
-    product_id INT NOT NULL
+    product_id INT NOT NULL,
+    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_client_product ON favorites.favorites (client_id, product_id);
@@ -31,3 +32,6 @@ GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA favorites TO client_service_user
 
 INSERT INTO favorites.clients (name, email) VALUES ('John Doe', 'john@example.com');
 INSERT INTO favorites.favorites (client_id, product_id) VALUES (1, 1);
+
+INSERT INTO favorites.favorites (client_id, product_id) VALUES (1, 2);
+INSERT INTO favorites.favorites (client_id, product_id) VALUES (1, 3);

@@ -4,7 +4,6 @@ deps:
 	poetry install
 	poetry run pre-commit install
 
-# Lint code
 lint:
 	black . --check --diff
 	flake8 src --max-complexity=6
@@ -19,7 +18,7 @@ format:
 start: check-deps
 	uvicorn src.main:app --port 8081 --loop uvloop --reload
 
-start-containers:
+start-containers: check-deps
 	docker compose up --build
 
 reload-volumes:
