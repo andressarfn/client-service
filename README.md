@@ -14,6 +14,9 @@ Ou, para facilitar o processo, utilize o comando abaixo se possuir o `Makefile` 
 ```bash
 make start-containers
 ```
+## Porta
+
+O serviço estará disponível na porta `8081` por padrão. Certifique-se de que essa porta esteja disponível em seu ambiente para acesso ao serviço.
 
 ## Variáveis de ambiente
 
