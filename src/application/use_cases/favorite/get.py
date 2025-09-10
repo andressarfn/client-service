@@ -17,9 +17,9 @@ class GetFavoriteUseCase:
     favorite_repository: FavoriteRepositoryInterface
     product_client: ProductClientInterface
 
-    async def execute(self, client_id: int) -> list[ProductFavoriteEntity]:
-        product_ids = await self.favorite_repository.get_favorites_by_client_id(
-            client_id
+    async def execute(self, customer_id: int) -> list[ProductFavoriteEntity]:
+        product_ids = await self.favorite_repository.get_favorites_by_customer_id(
+            customer_id
         )
         products = []
         for product in product_ids:
@@ -28,6 +28,6 @@ class GetFavoriteUseCase:
                 products.append(product)
 
         return FavoritesOutputEntity(
-            client_id=client_id,
+            customer_id=customer_id,
             favorites=products,
         )

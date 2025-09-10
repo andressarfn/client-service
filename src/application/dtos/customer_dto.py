@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
 
-class ClientInputDTO(BaseModel):
+class CustomerInputDTO(BaseModel):
     name: str
     email: str

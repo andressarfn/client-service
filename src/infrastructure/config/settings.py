@@ -4,12 +4,12 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Product Service"
+    PROJECT_NAME: str = "Customer Service"
     DESCRIPTION: str = "Study Project"
     VERSION: str = "1.0.0"
     DEBUG: bool = False
 
-    ROOT_PATH: str = "client-service"
+    ROOT_PATH: str = "customer-service"
 
     DATABASE_URL: str = ""
     DATABASE_SCHEMA: str = ""

@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from pydantic import BaseModel
 
 
-class ClientRepositoryInterface(ABC):
+class CustomerRepositoryInterface(ABC):
     @abstractmethod
     async def create(self, item: BaseModel) -> int: ...
 

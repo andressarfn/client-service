@@ -11,12 +11,12 @@ class ProductFavoriteEntity(BaseModel):
 
 
 class FavoriteInputEntity(BaseModel):
-    client_id: int
+    customer_id: int
     product_id: int | None = None
 
 
 class FavoritesOutputEntity(BaseModel):
-    client_id: int
+    customer_id: int
     favorites: list[ProductFavoriteEntity]
 
 

@@ -13,7 +13,7 @@ class CustomException(Exception):
 
     def as_dict(self) -> dict[str, Any]:
         return {
-            "event_type": "ClientServiceEventError",
+            "event_type": "CustomerServiceEventError",
             "params": {
                 "exc_type": self.__class__.__name__,
                 "exc_title": self.title,
@@ -35,7 +35,7 @@ class CustomHttpException(HTTPException):
 
     def as_dict(self) -> dict[str, Any]:
         return {
-            "event_type": "ClientServiceEventError",
+            "event_type": "CustomerServiceEventError",
             "params": {
                 "exc_type": self.__class__.__name__,
                 "exc_title": self.title,

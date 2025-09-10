@@ -25,7 +25,7 @@ services:
     <<: *network-config
   postgres:
     image: postgres:latest
-    container_name: postgres-client-service
+    container_name: postgres-customer-service
     restart: always
     environment:
       POSTGRES_USER: root

@@ -9,7 +9,7 @@ from loguru import logger
 from src.infrastructure.config.settings import settings
 from src.infrastructure.database.postgres_client import PostgresConnectionClient
 from src.interfaces.api.health_check.controller import health_check_router
-from src.interfaces.api.v1.client.controller import client_v1_router
+from src.interfaces.api.v1.customer.controller import customer_v1_router
 from src.interfaces.api.v1.favorite.controller import favorite_v1_router
 from src.interfaces.api.auth.controller import auth_router
 from src.utils.trace_id import configure_trace_id
@@ -98,6 +98,6 @@ async def request_middleware(request: Request, call_next: callable):
 
 
 app.include_router(health_check_router)
-app.include_router(client_v1_router)
+app.include_router(customer_v1_router)
 app.include_router(favorite_v1_router)
 app.include_router(auth_router)

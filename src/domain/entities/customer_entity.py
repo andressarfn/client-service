@@ -1,13 +1,13 @@
 from pydantic import BaseModel
 
 
-class ClientInputEntity(BaseModel):
+class CustomerInputEntity(BaseModel):
     name: str
     email: str
 
 
-class ClientOutputEntity(BaseModel):
-    client_id: int
+class CustomerOutputEntity(BaseModel):
+    customer_id: int
     name: str | None = None
     email: str | None = None
     created_at: str | None = None

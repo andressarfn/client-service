@@ -1,4 +1,4 @@
-# client-service
+# customer-service
 ## Como executar
 
 Este serviço roda em um container Docker. Para iniciar, utilize:

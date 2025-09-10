@@ -15,7 +15,7 @@ class ProductFavoriteSchema(BaseModel):
 
 
 class FavoritesResponseSchema(BaseModel):
-    client_id: int
+    customer_id: int
     favorites: list[ProductFavoriteSchema]
 
 

@@ -34,13 +34,13 @@ favorite_v1_router = APIRouter(prefix="/v1", tags=["Favorite"])
 
 
 @favorite_v1_router.post(
-    "/client/{client_id}/favorite",
-    description="Add a favorite item for a client",
+    "/customer/{customer_id}/favorite",
+    description="Add a favorite item for a customer",
     status_code=status.HTTP_201_CREATED,
     response_model=FavoriteResponseSchema,
 )
 async def add_favorite(
-    client_id: Annotated[int, Path(..., description="Client ID")],
+    customer_id: Annotated[int, Path(..., description="Customer ID")],
     schema: Annotated[FavoriteRequestSchema, Body(..., description="Favorite Item")],
     session: Annotated[AsyncSession, Depends(PostgresConnectionClient.session)],
     product_client: Annotated[ProductClientInterface, Depends(get_product_client)],
@@ -54,7 +54,7 @@ async def add_favorite(
                 status_code=status.HTTP_401_UNAUTHORIZED,
             )
         favorite_input_dto = FavoriteInputDTO(
-            client_id=client_id, product_id=schema.product_id
+            customer_id=customer_id, product_id=schema.product_id
         )
         favorite_input_entity = FavoriteMapper.to_entity(favorite_input_dto)
         use_case = AddFavoriteUseCase(
@@ -74,13 +74,13 @@ async def add_favorite(
 
 
 @favorite_v1_router.get(
-    "/client/{client_id}/favorites",
-    description="Get all favorite items for a client",
+    "/customer/{customer_id}/favorites",
+    description="Get all favorite items for a customer",
     status_code=status.HTTP_200_OK,
     response_model=FavoritesResponseSchema,
 )
 async def get_favorites(
-    client_id: Annotated[int, Path(..., description="Client ID")],
+    customer_id: Annotated[int, Path(..., description="Customer ID")],
     session: Annotated[AsyncSession, Depends(PostgresConnectionClient.session)],
     product_client: Annotated[ProductClientInterface, Depends(get_product_client)],
     current_user: Annotated[str, Depends(get_current_user)],
@@ -96,7 +96,7 @@ async def get_favorites(
             favorite_repository=FavoriteRepository(session),
             product_client=product_client,
         )
-        favorites_output_entity = await use_case.execute(client_id)
+        favorites_output_entity = await use_case.execute(customer_id)
         return FavoritesResponseSchema(
             **favorites_output_entity.model_dump(),
         )
