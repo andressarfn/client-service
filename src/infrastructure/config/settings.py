@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     DESCRIPTION: str = "Study Project"
     VERSION: str = "1.0.0"
     DEBUG: bool = False
+    SERIALIZE_LOGS: bool = True
+    LOG_LEVEL: str = "INFO"
 
     ROOT_PATH: str = "customer-service"
 
